@@ -1,0 +1,51 @@
+{
+  "name": "@fhuang/mcp-mysql-server",
+  "version": "1.0.0",
+  "description": "The Model Context Protocol (MCP) server establishes a standardized JSON-RPC 2.0 interface for MySQL operations, enabling CRUD execution, transaction management, and ddl",
+  "type": "module",
+  "bin": {
+    "mcp-mysql": "./build/index.js"
+  },
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "prepare": "npm run build",
+    "watch": "tsc --watch",
+    "inspector": "cross-env MYSQL_HOST=192.168.76.16 MYSQL_USER=root MYSQL_PORT=13306 MYSQL_PASSWORD=dkqDEL09#oi MYSQL_DATABASE=test npx @modelcontextprotocol/inspector build/index.js",
+    "prepare-inspect": "npm run prepare && npm run inspector"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "mysql",
+    "database",
+    "claude",
+    "anthropic"
+  ],
+  "author": "huangfeng19820712",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "dotenv": "^16.4.7",
+    "mcp-evals": "^1.0.18",
+    "mysql2": "^3.11.5",
+    "pino": "^8.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.11.24",
+    "cross-env": "^7.0.3",
+    "jest": "^30.0.5",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.3.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/huangfeng19820712/mcp-mysql-server"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
