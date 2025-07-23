@@ -11,7 +11,7 @@ import * as mysql from 'mysql2/promise';
 import { config } from 'dotenv';
 import { URL } from 'url';
 import pino from 'pino';
-import { handleQuery, handleExecute, handleListTables, handleDescribeTable, handleShowStatement, QueryArgs, ExecuteArgs, DescribeTableArgs, ShowArgs, HandlerResult } from './handlers.js';
+import { handleQuery, handleExecute, handleListTables, handleDescribeTable, handleShowStatement, handleExplain, QueryArgs, ExecuteArgs, DescribeTableArgs, ShowArgs, ExplainArgs, HandlerResult } from './handlers.js';
 const logger = pino.default({
   transport: {
     targets: [
@@ -47,6 +47,10 @@ function isErrorWithMessage(error: unknown): error is { message: string } {
 }
 
 // Helper to get error message
+function validatePort(port: number): boolean {
+  return Number.isInteger(port) && port > 0 && port <= 65535;
+}
+
 function getErrorMessage(error: unknown): string {
   if (isErrorWithMessage(error)) {
     return error.message;
@@ -67,7 +71,7 @@ function parseMySQLUrl(url: string): DatabaseConfig {
       user: parsedUrl.username || '',
       password: parsedUrl.password || '',
       database: parsedUrl.pathname.slice(1), // remove leading '/'
-      port: parsedUrl.port ? parseInt(parsedUrl.port, 10) : 3306,
+      port: parsedUrl.port ? (() => { const p = parseInt(parsedUrl.port, 10); return validatePort(p) ? p : 3306; })() : 3306,
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -107,7 +111,7 @@ class MySQLServer {
         process.exit(1);
       }
     }
-    
+
     if (process.env.MYSQL_HOST && process.env.MYSQL_USER && process.env.MYSQL_PASSWORD && process.env.MYSQL_DATABASE) {
       // Fallback to environment variables if no command line argument is provided
       this.config = {
@@ -115,7 +119,7 @@ class MySQLServer {
         user: process.env.MYSQL_USER,
         password: process.env.MYSQL_PASSWORD,
         database: process.env.MYSQL_DATABASE,
-        port: Number(process.env.MYSQL_PORT ?? 3306),
+        port: process.env.MYSQL_PORT ? (() => { const p = Number(process.env.MYSQL_PORT); return validatePort(p) ? p : 3306; })() : 3306,
       };
     }
 
@@ -133,8 +137,8 @@ class MySQLServer {
       database: this.config.database,
       port: this.config.port,
       waitForConnections: true,
-      connectionLimit: 10,
-      queueLimit: 0,
+      connectionLimit: Number(process.env.CONNECTION_LIMIT || 10),
+      queueLimit: Number(process.env.QUEUE_LIMIT || 0),
     });
 
     this.setupToolHandlers();
@@ -145,7 +149,7 @@ class MySQLServer {
       await this.cleanup();
       process.exit(0);
     });
-    logger.info('config>'+JSON.stringify(this.config));
+    logger.info('config>' + JSON.stringify({ ...this.config, password: '******' }));
   }
 
   private async cleanup() {
@@ -288,6 +292,20 @@ class MySQLServer {
             required: ['sql'],
           },
         },
+        {
+          name: 'explain',
+          description: 'Analyze SQL query performance using EXPLAIN',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              sql: {
+                type: 'string',
+                description: 'SQL query to analyze with EXPLAIN'
+              }
+            },
+            required: ['sql']
+          }
+        },
       ],
     }));
 
@@ -305,6 +323,8 @@ class MySQLServer {
           return await handleDescribeTable(this.pool!, request.params.arguments as unknown as DescribeTableArgs);
         case 'show_statement':
           return await handleShowStatement(this.pool!, request.params.arguments as unknown as ShowArgs);
+        case 'explain':
+          return await handleExplain(this.pool!, request.params.arguments as unknown as ExplainArgs);
         default:
           throw new McpError(
             ErrorCode.MethodNotFound,
@@ -415,7 +435,7 @@ class MySQLServer {
         '数据库查询执行失败，请联系管理员。'
       );
     }
-}
+  }
 
   private async handleExecute(args: any) {
     await this.ensureConnection();
@@ -452,7 +472,7 @@ class MySQLServer {
         '数据库写入操作失败，请联系管理员。'
       );
     }
-}
+  }
 
   private async handleListTables() {
     await this.ensureConnection();
@@ -478,7 +498,7 @@ class MySQLServer {
         '获取数据表列表失败，请联系管理员。'
       );
     }
-}
+  }
 
   private async handleDescribeTable(args: any) {
     await this.ensureConnection();
@@ -508,7 +528,7 @@ class MySQLServer {
         '获取表结构失败，请联系管理员。'
       );
     }
-}
+  }
 
   private async handleShowStatement(args: any) {
     await this.ensureConnection();

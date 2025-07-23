@@ -154,6 +154,19 @@ use_mcp_tool({
 });
 ```
 
+### 7. explain
+Analyze SQL query performance using EXPLAIN. Returns execution plan details including access type, rows examined, and possible optimizations.
+
+```typescript
+use_mcp_tool({
+  server_name: "mysql",
+  tool_name: "explain",
+  arguments: {
+    sql: "SELECT * FROM users WHERE id = ?"
+  }
+});
+```
+
 ## Features
 
 - Secure connection handling with automatic cleanup

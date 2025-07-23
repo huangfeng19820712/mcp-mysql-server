@@ -1,6 +1,6 @@
 import { Pool } from 'mysql2/promise';
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
-import pino from 'pino';
+import { pino } from 'pino';
 
 const logger = pino();
 
@@ -23,6 +23,14 @@ export interface HandlerResult {
 }
 
 export interface ShowArgs {
+  sql: string;
+}
+
+export interface ExplainArgs {
+  sql: string;
+}
+
+export interface ExplainArgs {
   sql: string;
 }
 
@@ -55,7 +63,7 @@ export async function handleQuery(pool: Pool, args: QueryArgs): Promise<HandlerR
     });
     throw new McpError(
       ErrorCode.InternalError,
-      '数据库查询执行失败，请联系管理员。'
+      'DATABASE_QUERY_FAILED'
     );
   }
 }
@@ -90,7 +98,7 @@ export async function handleExecute(pool: Pool, args: ExecuteArgs): Promise<Hand
     });
     throw new McpError(
       ErrorCode.InternalError,
-      '数据库写入操作失败，请联系管理员。'
+      'DATABASE_EXECUTE_FAILED'
     );
   }
 }
@@ -114,7 +122,7 @@ export async function handleListTables(pool: Pool): Promise<HandlerResult> {
     });
     throw new McpError(
       ErrorCode.InternalError,
-      '获取数据表列表失败，请联系管理员。'
+      'LIST_TABLES_FAILED'
     );
   }
 }
@@ -142,7 +150,35 @@ export async function handleDescribeTable(pool: Pool, args: DescribeTableArgs): 
     });
     throw new McpError(
       ErrorCode.InternalError,
-      '获取表结构失败，请联系管理员。'
+      'DESCRIBE_TABLE_FAILED'
+    );
+  }
+}
+
+export async function handleExplain(pool: Pool, args: ExplainArgs): Promise<HandlerResult> {
+  if (!args.sql) {
+    throw new McpError(ErrorCode.InvalidParams, 'SQL query is required for EXPLAIN');
+  }
+  try {
+    const explainSql = `EXPLAIN ${args.sql}`;
+    const [rows] = await pool.query(explainSql);
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(rows, null, 2),
+        },
+      ],
+    };
+  } catch (error) {
+    logger.error({
+      msg: 'EXPLAIN execution failed',
+      sql: args.sql,
+      error: error instanceof Error ? error.message : String(error)
+    });
+    throw new McpError(
+      ErrorCode.InternalError,
+      'DATABASE_EXPLAIN_FAILED'
     );
   }
 }
@@ -169,7 +205,7 @@ export async function handleShowStatement(pool: Pool, args: ShowArgs): Promise<H
     });
     throw new McpError(
       ErrorCode.InternalError,
-      'SHOW 语句执行失败，请联系管理员。'
+      'SHOW_STATEMENT_FAILED'
     );
   }
-} 
+}

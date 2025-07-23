@@ -99,6 +99,22 @@ use_mcp_tool({
 - 错误详细提示
 - TypeScript 支持
 - 自动关闭连接
+- 支持SQL性能分析（EXPLAIN）
+
+## 可用工具
+
+### 7. explain
+分析SQL查询性能，返回执行计划详情，包括访问类型、扫描行数和可能的优化建议。
+
+```typescript
+use_mcp_tool({
+  server_name: "mysql",
+  tool_name: "explain",
+  arguments: {
+    sql: "SELECT * FROM users WHERE id = ?"
+  }
+});
+```
 
 ---
 
@@ -126,4 +142,4 @@ GitHub 地址：https://github.com/huangfeng19820712/mcp-mysql-server
 
 ## 许可证
 
-MIT 
+MIT

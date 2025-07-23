@@ -1,4 +1,4 @@
-import { handleQuery, handleExecute, handleListTables, handleDescribeTable, handleShowStatement, QueryArgs, ExecuteArgs, DescribeTableArgs, ShowArgs } from '../src/handlers.js';
+import { handleQuery, handleExecute, handleListTables, handleDescribeTable, handleShowStatement, handleExplain, QueryArgs, ExecuteArgs, DescribeTableArgs, ShowArgs, ExplainArgs } from '../src/handlers.js';
 import { Pool } from 'mysql2/promise';
 
 jest.mock('mysql2/promise');
@@ -70,4 +70,21 @@ describe('handleShowStatement', () => {
     const args: ShowArgs = { sql: 'SELECT * FROM users' };
     await expect(handleShowStatement(mockPool, args)).rejects.toThrow();
   });
-}); 
+});
+
+describe('handleExplain', () => {
+  it('should return execution plan for valid SQL', async () => {
+    mockPool.query = jest.fn().mockResolvedValue([[
+      { id: 1, select_type: 'SIMPLE', table: 'users', type: 'ALL', rows: 100 }
+    ]]);
+    const args: ExplainArgs = { sql: 'SELECT * FROM users WHERE id = 1' };
+    const result = await handleExplain(mockPool, args);
+    expect(mockPool.query).toHaveBeenCalledWith('EXPLAIN SELECT * FROM users WHERE id = 1');
+    expect(result.content[0].text).toContain('SIMPLE');
+    expect(result.content[0].text).toContain('users');
+  });
+  it('should throw error when SQL is missing', async () => {
+    const args: ExplainArgs = { sql: '' };
+    await expect(handleExplain(mockPool, args)).rejects.toThrow('SQL query is required for EXPLAIN');
+  });
+});
