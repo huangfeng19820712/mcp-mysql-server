@@ -13,7 +13,7 @@
     "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
     "prepare": "npm run build",
     "watch": "tsc --watch",
-    "inspector": "cross-env MYSQL_HOST=192.168.76.16 MYSQL_USER=root MYSQL_PORT=13306 MYSQL_PASSWORD=dkqDEL09#oi MYSQL_DATABASE=test npx @modelcontextprotocol/inspector build/index.js",
+    "inspector": "cross-env MYSQL_HOST= MYSQL_USER= MYSQL_PORT= MYSQL_PASSWORD= MYSQL_DATABASE= npx @modelcontextprotocol/inspector build/index.js",
     "prepare-inspect": "npm run prepare && npm run inspector",
     "publish": "npm publish --access public --registry=https://registry.npmjs.org/"
   },
