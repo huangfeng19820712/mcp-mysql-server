@@ -1,6 +1,6 @@
 {
   "name": "@fhuang/mcp-mysql-server",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "The Model Context Protocol (MCP) server establishes a standardized JSON-RPC 2.0 interface for MySQL operations, enabling CRUD execution, transaction management, and ddl",
   "type": "module",
   "bin": {

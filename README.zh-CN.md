@@ -1,6 +1,7 @@
 # @fhuang/mcp-mysql-server 中文说明
 
 一个基于 Model Context Protocol (MCP) 的 MySQL 数据库服务端，支持 AI 模型通过标准接口安全地操作 MySQL 数据库。
+支持对数据库的查询、插入、更新、删除、ddl、解析sql语句、性能分析等操作。
 
 ---
 
