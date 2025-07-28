@@ -10,7 +10,7 @@
 
 [![smithery badge](https://smithery.ai/badge/@fhuang/mcp-mysql-server)](https://smithery.ai/server/@fhuang/mcp-mysql-server)
 
-A Model Context Protocol server that provides MySQL database operations. This server enables AI models to interact with MySQL databases through a standardized interface.Supports operations such as querying, inserting, updating, deleting, DDL, parsing SQL statements, and performance analysis on databases.
+A Model Context Protocol server that provides MySQL database operations. This server enables AI models to interact with MySQL databases through a standardized interface.
 
 
 ## Installation

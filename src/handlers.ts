@@ -1,8 +1,8 @@
 import { Pool } from 'mysql2/promise';
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
-import { pino } from 'pino';
+import pino from 'pino';
 
-const logger = pino();
+const logger = pino.default();
 
 export interface QueryArgs {
   sql: string;
