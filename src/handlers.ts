@@ -2,7 +2,7 @@ import { Pool } from 'mysql2/promise';
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import pino from 'pino';
 
-const logger = pino.default();
+const logger = pino.default({ level: 'info' }, pino.destination({ dest: 'server.log', mkdir: true }));
 
 export interface QueryArgs {
   sql: string;
@@ -61,9 +61,10 @@ export async function handleQuery(pool: Pool, args: QueryArgs): Promise<HandlerR
       params: args.params,
       error: error instanceof Error ? error.message : String(error)
     });
+
     throw new McpError(
       ErrorCode.InternalError,
-      'DATABASE_QUERY_FAILED'
+        error instanceof Error ? error.message : String(error)
     );
   }
 }
@@ -98,7 +99,7 @@ export async function handleExecute(pool: Pool, args: ExecuteArgs): Promise<Hand
     });
     throw new McpError(
       ErrorCode.InternalError,
-      'DATABASE_EXECUTE_FAILED'
+        error instanceof Error ? error.message : String(error)
     );
   }
 }
@@ -122,7 +123,7 @@ export async function handleListTables(pool: Pool): Promise<HandlerResult> {
     });
     throw new McpError(
       ErrorCode.InternalError,
-      'LIST_TABLES_FAILED'
+        error instanceof Error ? error.message : String(error)
     );
   }
 }
@@ -150,7 +151,7 @@ export async function handleDescribeTable(pool: Pool, args: DescribeTableArgs): 
     });
     throw new McpError(
       ErrorCode.InternalError,
-      'DESCRIBE_TABLE_FAILED'
+        error instanceof Error ? error.message : String(error)
     );
   }
 }
@@ -178,7 +179,7 @@ export async function handleExplain(pool: Pool, args: ExplainArgs): Promise<Hand
     });
     throw new McpError(
       ErrorCode.InternalError,
-      'DATABASE_EXPLAIN_FAILED'
+        error instanceof Error ? error.message : String(error)
     );
   }
 }
@@ -205,7 +206,7 @@ export async function handleShowStatement(pool: Pool, args: ShowArgs): Promise<H
     });
     throw new McpError(
       ErrorCode.InternalError,
-      'SHOW_STATEMENT_FAILED'
+        error instanceof Error ? error.message : String(error)
     );
   }
 }
